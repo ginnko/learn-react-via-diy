@@ -1,0 +1,24 @@
+{
+  "name": "learn-react-via-diy",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ginnko/learn-react-via-diy.git"
+  },
+  "scripts": {
+    "build": "babel ./src/**/*.js --out-dir lib"
+  },
+  "author": "ginnko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ginnko/learn-react-via-diy/issues"
+  },
+  "homepage": "https://github.com/ginnko/learn-react-via-diy#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-syntax-jsx": "^7.0.0",
+    "@babel/plugin-transform-react-jsx": "^7.0.0"
+  }
+}
