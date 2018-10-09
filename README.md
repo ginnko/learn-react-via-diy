@@ -8,13 +8,13 @@
 
 #### memo
 
-##### element
+###### element
 
 `createElement`函数实现相当简单，只是单纯的返回一个对象，对象有三个属性：`type`, `props`以及`children`。
 
 借助`babel`转换同时调用`createElement`将标签字面量形式转换成了对象。
 
-##### render
+###### render
 
 `render`函数执行了实际的创建dom节点`document.createElement`或者`document.createTextNode`将节点插入到父节点`parent.appendChild(el)`或者`dom.appendChild(render(child))`的过程。
 
@@ -24,7 +24,7 @@
 
 其中`事件回调函数`、`checked, value 以及 className`、`style`、`ref`以及`key`单独处理，其余的属性都是`dom.setAttribute()`函数处理。
 
-这里有个疑问，**直接成为dom元素的属性**和使用 **dom.setAttribute** 函数处理用什么不同？
+这里有个疑问，`直接成为dom元素的属性`和使用`dom.setAttribute`函数处理用什么不同？
 
 感觉上面是按`properties`和`attributes`两类分的。
 
@@ -33,6 +33,26 @@
 >For a given DOM node object, properties are the properties of that object, and attributes are the elements of the attributes property of that object.
 
 文章里说`dom.value`能反映`<input />`值的改变，所以`setAttribute`函数中是作为dom对象的属性处理的，其他也应该是类似或者其他特殊的原因。
+
+###### patch
+
+分情况讨论：
+
+`primitive Vdom` + `Text dom`: 如果值不相同就完全替换
+
+`primitive Vdom` + `Element Dom`: 完全替换
+
+`Complex Vdom` + `Text dom`： 完全替换
+
+`Complex Vdom` + `Element Dom`： 类型不同，完全替换
+
+`Complex Vdom` + `Element Dom`: 类型相同，要经过一个复杂的比较过程
+
+`Component Vdom` + `其他dom`
+
+###### components
+
+这个实质就是类，有点忘记了，明天看下阮一峰的教程。
 
 #### 简单配置babel环境
 
@@ -47,3 +67,5 @@
 3. `Array.prototype.concat()`:可以同时传入多个参数数组
 
 比如在[render](./src/render/render.js)中就联合`展开运算符`使用了这个方法：`[].concat(...vdom.children)`
+
+4. `childNode.remove()`:删除dom节点
