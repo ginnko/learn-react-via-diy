@@ -8,15 +8,37 @@
 
 #### memo
 
+这种代码经常会涉及到递归自己，看这种代码为避免混乱，一个简化的办法是把节点看作没有子节点的简单节点。
+
 ###### element
 
 `createElement`函数实现相当简单，只是单纯的返回一个对象，对象有三个属性：`type`, `props`以及`children`。
+
+树状结构的对象组合就形成了虚拟节点。
 
 借助`babel`转换同时调用`createElement`将标签字面量形式转换成了对象。
 
 ###### render
 
+渲染的过程指的是将虚拟节点转变成可视化的DOM节点的过程。
+
+渲染具体包括两个过程：
+
+1. 创建DOM节点
+
+2. 给DOM节点添加相关属性
+
+渲染可以分为三类：
+
+1. `基本虚拟节点渲染`: 字符串，数字，布尔值，null都被渲染成了纯文本节点。其中，字符串和数字直接作为文本节点的内容，布尔值和null使用空字符串作为文本节点的内容。
+
+2. `复杂虚拟节点渲染`：常见的标签节点。实现思路是：1.创建type所指示类型的DOM节点，并挂载到父节点中;2.递归执行其子虚拟节点;3.通过属性迭代，给这个新创建的dom节点附上属性
+
+3. `组件渲染`
+
 `render`函数执行了实际的创建dom节点`document.createElement`或者`document.createTextNode`将节点插入到父节点`parent.appendChild(el)`或者`dom.appendChild(render(child))`的过程。
+
+`render`函数内部有一个`mount`挂载方法，这个方法实际执行将创建的dom节点插入到父节点的过程，感觉这个函数的命名相当准确。
 
 [例子](./src/render/render.js)中走的是`complex rendering`分支。
 
@@ -32,9 +54,19 @@
 
 >For a given DOM node object, properties are the properties of that object, and attributes are the elements of the attributes property of that object.
 
-文章里说`dom.value`能反映`<input />`值的改变，所以`setAttribute`函数中是作为dom对象的属性处理的，其他也应该是类似或者其他特殊的原因。
+文章里说`dom.value`能反映`<input />`值的改变，所以`setAttribute`函数中是作为dom对象的属性处理的。
+
+`ref`是为了获取对当前元素的直接引用，所以也要单独处理。
+
+**看一下比如`input`的属性，上面说的这几个特殊属性都是直接作为`input`的属性存在的，所以单独处理无可后非**
 
 ###### patch
+
+比较算法基于两个假设：
+
+1. 不同类型的元素创建的tree不同
+
+2. key的设置使用来标识当前子元素，辅助进行比较
 
 分情况讨论：
 
@@ -50,11 +82,57 @@
 
 `Component Vdom` + `其他dom`
 
-###### components
+虚拟节点类型只有三种：
 
-下面横杠间的部分是关于class的复习内容，来自阮一峰的[ES6入门](http://es6.ruanyifeng.com/#docs/class)
+1. `primitive`
+
+2. `compelex`
+
+3. `Component`
+
+实际DOM节点有两种类型：
+
+1. 文本节点
+
+2. 元素节点
+
+组合一下就出现了上述六种情况。
+
+实际写代码按虚拟节点的类型进行判断即可。
 
 ---
+辅助知识
+
+1. 文本节点可以这样进行判断：`dom instanceof Text`
+
+2. `textContent`表示dom节点的文本属性
+
+3. `nodeName`属性表示当前节点的tag名称，为大写的字符串形式
+
+4. `document.activeElement`获取当前焦点所在的元素节点
+
+5. `ChildNode.remove()`将`ChildNode`从其所在的父节点中移除
+
+---
+###### Component
+
+Component中定义的`render`和`patch`两个方法是定义在Component类上的静态方法，其他都是定义在类原型上的共用方法。
+
+1. Component定义了一个`render`静态方法，用于 **提取** `vdom`，然后再通过通用的render方法进行渲染
+
+2. Component还定义一个`patch`静态方法，用于 **提取** `vdom`，然后再通过通用的patch方法进行渲染
+
+3. `setState`，每次执行一次这个方法都可能会执行一次`patch`方法，原理是通过刷新`state`和`props`获得新的`vdom`，然后用`patch`进行比较。目测这个简化版的`setState`没有自动合并属性的功能。**这个要看下react是怎么处理的。**
+
+4. `shouldComponentUpdate`，定义在原型上的这个函数始终返回`true`，可以在子类中重写，接受的两个参数是`新的props`以及`新的state`。
+
+5. `componentWillUnmount()`
+
+这个函数的名字叫`componentWillUnmount`，从代码的效果来看是指，通过比较dom元素的key之后，对 **剩余的key的元素** 执行这个函数，react中也是这么做的？
+
+
+---
+横杠间的部分是关于class的复习内容，来自阮一峰的[ES6入门](http://es6.ruanyifeng.com/#docs/class)
 
 1. 类中有一个`constructor`方法，叫作构造方法，对应ES5的构造函数。
 

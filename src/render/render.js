@@ -6,7 +6,7 @@ const createElement = (type, props, ...children) => {
 };
 
 const setAttribute = (dom, key, value) => {
-  if (typeof value == 'function' && key.startWith('on')) {
+  if (typeof value == 'function' && key.startsWith('on')) {
     const eventType = key.slice(2).toLowerCase();
     dom.__ginnactHandlers = dom.__ginnactHandlers || {};
     dom.removeEventListener(eventType, dom.__ginnactHandlers[eventType]);
@@ -48,9 +48,14 @@ const render = (vdom, parent = null) => {
   }
 };
 
+let refNode;
+
 const list = <ul className="wrapper">
   <li className="item">One</li>
   <li className="item">Two</li>
+  <li ref={node => {refNode = node}}></li>
 </ul>;
 
 render(list, document.getElementById('root'));
+
+console.log(refNode);

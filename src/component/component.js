@@ -5,7 +5,7 @@ const createElement = (type, props, ...children) => {
   return {type, props, children};
 };
 
-const setAttribute = (dom, key, vlaue) => {
+const setAttribute = (dom, key, value) => {
   if (typeof value === 'function' && key.startsWith('on')) {
     // 用来处理函数属性的情况
     // 一个dom对象上事件都以
@@ -104,6 +104,155 @@ class Component {
   }
 
   static render(vdom, parent = null) {
-    
+    const props = Object.assign({}, vdom.props, {children: vdom.children});
+    if (Component.isPrototypeOf(vdom.type)) {
+      // 这里就有点高潮了
+      // instance是一个实例对象
+      // 只是用来创建DOM对象的一个媒介
+      // 喵！喵！喵！
+      const instance = new (vdom.type)(props);
+      instance.componentWillMount();
+      instance.base = render(instance.render(), parent);
+      instance.base.__ginnactInstance = instance;
+      instance.base.__ginnactKey = vdom.props.key;
+      instance.componentDidMount();
+      return instance.base;
+    } else {
+      // 这个应该是无状态组件的情况
+      return render(vdom.type(props), parent);
+    }
+  }
+
+  static patch(dom, vdom, parent = dom.parentNode) {
+    const props = Object.assign({}, vdom.props, {children: vdom.children});
+    if (dom.__ginnactInstance && dom.__ginnactInstance.constructor === vdom.type) {
+      dom.__ginnactInstance.componentWillReceiveProps(props);
+      // 下面这行代码是干嘛用的？
+      // 感觉是用在下下行代码中
+      // 用于这里： dom.__ginnactInstance.render()
+      // 和之前遇到的vdom.props一个效果
+      dom.__ginnactInstance.props = props;
+      return patch(dom, dom.__ginnactInstance.render(), parent);
+    } else if (Component.isPrototypeOf(vdom.type)) {
+      const ndom = Component.render(vdom, parent);
+      return parent ? (parent.replaceChild(ndom, dom) && ndom) : (ndom);
+    } else if (!Component.isPrototypeOf(vdom.type)) {
+      // 针对无状态组件的情况
+      return patch(dom, vdom.type(props), parent);
+    }
+  }
+
+  setState(nextState) {
+    if (this.base && this.shouldComponentUpdate(this.props, nextState)) {
+      const prevState = this.state;
+      // 感觉是下面这两行代码替换了props和state
+      this.componentWillUpdate(this.props, nextState);
+      this.state = nextState;
+      // 然后用render返回替换后的新的vdom
+      patch(this.base, this.render());
+      this.componentDidUpdate(this.props, prevState);
+    } else {
+      this.state = nextState;
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextProps != this.props || nextState != this.state;
+  }
+
+  componentWillReceiveProps(nextProps) {
+    return undefined;
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    return undefined;
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    return undefined;
+  }
+
+  componentWillMount() {
+    return undefined;
+  }
+
+  componentDidMount() {
+    return undefined;
+  }
+
+  componentWillUnmount() {
+    return undefined;
   }
 };
+
+const TodoItem = (props) => {
+  return (
+    <li className="todo-item">
+      <span>{props.text} - </span>
+      <a href="#" onClick={props.onClick}>X</a>
+    </li>
+  );
+};
+
+class Todo extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      input: '',
+      items: []
+    };
+    this.handleAdd('Goal #1');
+    this.handleAdd('Goal #2');
+    this.handleAdd('Goal #3');
+  }
+
+  handleInput(e) {
+    this.setState({
+      input: e.target.value,
+      items: this.state.items
+    });
+  }
+
+  handleAdd(text) {
+    const newItems = [].concat(this.state.items);
+    newItems.push({
+      id: Math.random(),
+      text
+    });
+    this.setState({
+      input: '',
+      items: newItems
+    });
+  }
+  handleRemove(index) {
+    const newItems = [].concat(this.state.items);
+    newItems.splice(index, 1);
+    this.setState({
+      input: this.state.input,
+      items: newItems
+    });
+  }
+  render() {
+    return (
+      <div className="todo">
+        <ul className="item-wrapper">
+          {
+            this.state.items.map((item, index) => {
+              return (
+                <TodoItem
+                  key={item.id}
+                  text={item.text}
+                  onClick={e => this.handleRemove(index)}
+                />
+              );
+            })
+          }
+        </ul>
+        <input type="text" onInput={e => this.handleInput(e)} value={this.state.input} />
+        <button onClick={e => this.handleAdd(this.state.input)}>Add</button>
+      </div>
+    );
+  }
+};
+
+render(<Todo />, document.getElementById('root'));

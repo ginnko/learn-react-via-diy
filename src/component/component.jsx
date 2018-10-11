@@ -20,7 +20,7 @@ class Component {
   static render(vdom, parent=null) {
     const props = Object.assign({}, vdom.props, {children: vdom.children});
     if (Component.isPrototypeOf(vdom.type)) {
-      const instance = new (vdom.type)(proops);
+      const instance = new (vdom.type)(props);
       instance.componentWillMount();
       // 下面这行代码就很困惑了
       // 外层的render应该是前面写过的render
