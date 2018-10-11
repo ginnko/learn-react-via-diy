@@ -130,6 +130,25 @@ Component中定义的`render`和`patch`两个方法是定义在Component类上�
 
 这个函数的名字叫`componentWillUnmount`，从代码的效果来看是指，通过比较dom元素的key之后，对 **剩余的key的元素** 执行这个函数，react中也是这么做的？
 
+6. `componentWillMount()`
+
+这个函数用在组件首次渲染中
+
+7. `componentDidMount()`
+
+这个函数也是用在组件首次渲染函数中
+
+8. `componentWillReceiveProps()`
+
+这个函数用在组件patch中
+
+9. `componentWillUpdate()`
+
+这个函数用在setState中，在`componentWillReceiveProps()`之前
+
+10. `componentDidUpdate`
+
+这个函数用在setState中，在`componentWillReceiveProps()`之后
 
 ---
 横杠间的部分是关于class的复习内容，来自阮一峰的[ES6入门](http://es6.ruanyifeng.com/#docs/class)
