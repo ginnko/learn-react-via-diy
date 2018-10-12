@@ -240,7 +240,10 @@ ES6的继承机制完全不同，实质是先将父类实例对象的属性和�
 
 react的状态组件也是先要调用`super`的，好久没写居然记不清了，这怎么行，真是点点点了。
 
-super虽然代表了父类A的构造函数，但是返回的是子类B的实例，即super内部的this指的是B，因此super()在这里相当于A.prototype.constructor.call(this)。
+**super虽然代表了父类A的构造函数，但是返回的是子类B的实例，即super内部的this指的是B，因此super()在这里相当于A.prototype.constructor.call(this)。**
+
+
+
 ---
 
 #### 简单配置babel环境
