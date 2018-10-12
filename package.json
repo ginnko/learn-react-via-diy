@@ -7,7 +7,7 @@
     "url": "git+https://github.com/ginnko/learn-react-via-diy.git"
   },
   "scripts": {
-    "build": "babel ./src/**/*.js --out-dir lib"
+    "build": "babel ./src/**/**/*.js --out-dir lib"
   },
   "author": "ginnko",
   "license": "MIT",

@@ -134,6 +134,9 @@ class Component {
       dom.__ginnactInstance.props = props;
       return patch(dom, dom.__ginnactInstance.render(), parent);
     } else if (Component.isPrototypeOf(vdom.type)) {
+      // 个人感觉这个判断分支主要是针对 !(dom.__ginnactInstance.constructor === vdom.type) 这种情况
+      // 也就是已有dom节点的实例类型和vdom.type不一样的情况
+      // 所以下面就直接用了repalce的操作
       const ndom = Component.render(vdom, parent);
       return parent ? (parent.replaceChild(ndom, dom) && ndom) : (ndom);
     } else if (!Component.isPrototypeOf(vdom.type)) {
